@@ -67,7 +67,7 @@ Want to be certain? Turn off Wi-Fi after the page loads — unHEIC keeps convert
 - Vitest for unit tests
 - GitHub Pages for hosting, deployed via GitHub Actions
 
-No runtime dependencies beyond libheif-js and fflate. No analytics, no cookies, no third-party fonts, no telemetry.
+No runtime dependencies beyond libheif-js and fflate. No cookies, no fingerprinting, no third-party fonts. Anonymous, cookie-less page-view counts via Cloudflare Web Analytics — no personal data, no cross-site tracking.
 
 ## local development
 
