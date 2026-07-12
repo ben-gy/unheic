@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#4f46e5" />
+
+    <title>unHEIC — convert HEIC to JPG in your browser</title>
+    <meta
+      name="description"
+      content="Convert iPhone HEIC & HEIF photos to JPG, PNG or WebP right in your browser. Nothing is uploaded — your photos never leave your device."
+    />
+
+    <meta property="og:title" content="unHEIC — convert HEIC to JPG in your browser" />
+    <meta
+      property="og:description"
+      content="Convert iPhone HEIC & HEIF photos to JPG, PNG or WebP. 100% in your browser — no uploads, no accounts, works offline."
+    />
+    <meta property="og:type" content="website" />
+
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' blob: data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'none';"
+    />
+
+    <link rel="stylesheet" href="/src/styles/main.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="/">
+          <img class="brand-mark" src="/favicon.svg" width="30" height="30" alt="" />
+          <span class="brand-name">un<strong>HEIC</strong></span>
+        </a>
+        <div class="topbar-meta" aria-hidden="true">
+          <span><span class="meta-key">engine</span> libheif</span>
+          <span><span class="meta-key">runs</span> in-browser</span>
+          <span><span class="meta-key">uploads</span> none</span>
+        </div>
+        <nav class="topbar-nav">
+          <button type="button" class="nav-link" data-modal="tmpl-how-it-works">How it works</button>
+          <button type="button" class="nav-link" data-modal="tmpl-security">Threat model</button>
+          <button type="button" class="nav-link" data-modal="tmpl-about">About</button>
+        </nav>
+      </header>
+
+      <div class="main-grid">
+        <main id="app" class="main-content"><!-- populated by src/main.ts --></main>
+        <aside id="event-drawer" class="event-drawer"><!-- populated by src/eventlog.ts --></aside>
+      </div>
+
+      <footer class="statusbar">
+        <span class="status-pill">
+          <span class="dot-mini" id="sb-dot"></span>
+          <span id="sb-status">Ready</span>
+        </span>
+        <span class="statusbar-spacer"></span>
+        <span id="sb-throughput" class="sb-metric"></span>
+        <span class="attribution">Built by
+          <a href="https://benrichardson.dev/" target="_blank" rel="noopener noreferrer">benrichardson.dev</a>
+        </span>
+      </footer>
+    </div>
+
+    <!-- ─────────────── Modals ─────────────── -->
+    <template id="tmpl-how-it-works">
+      <div class="modal-content">
+        <h2 class="modal-title">How it works</h2>
+        <ol class="steps">
+          <li>
+            <span class="step-num">1</span>
+            <div>
+              <h3>Drop your HEIC photos</h3>
+              <p>Drag in one file or a whole camera-roll batch, tap to browse, or paste with
+                ⌘/Ctrl&nbsp;+&nbsp;V. Nothing is uploaded — the files are read straight into
+                this tab.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num">2</span>
+            <div>
+              <h3>Decode with libheif, locally</h3>
+              <p>A background worker runs the same open-source <strong>libheif</strong> engine
+                that servers use — compiled to WebAssembly — to turn each HEIC into raw pixels,
+                right on your device.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num">3</span>
+            <div>
+              <h3>Re-encode to JPG, PNG or WebP</h3>
+              <p>Your browser's built-in image encoder writes the pixels back out in the format
+                you picked, at the quality you choose. Hidden GPS &amp; camera metadata is
+                dropped in the process; only the correct rotation is kept.</p>
+            </div>
+          </li>
+          <li>
+            <span class="step-num">4</span>
+            <div>
+              <h3>Download, copy or share</h3>
+              <p>Save each photo, copy it to the clipboard, share it (on mobile), or grab the
+                whole batch as a single ZIP. It all happened without a server.</p>
+            </div>
+          </li>
+        </ol>
+      </div>
+    </template>
+
+    <template id="tmpl-security">
+      <div class="modal-content">
+        <h2 class="modal-title">Threat model</h2>
+        <p class="modal-lede">unHEIC is built so your photos physically cannot reach us — there
+          is no server that could receive them. Here's exactly what that does and doesn't cover.</p>
+        <div class="security-grid">
+          <div class="security-card good">
+            <h3>Protected</h3>
+            <ul>
+              <li>Your photo's pixels and every byte of the HEIC file — decoded and re-encoded in this tab, never transmitted.</li>
+              <li>GPS location, camera serial, timestamps and other EXIF metadata — stripped out by re-encoding through the canvas.</li>
+              <li>Filenames — never sent anywhere.</li>
+            </ul>
+          </div>
+          <div class="security-card bad">
+            <h3>Not protected</h3>
+            <ul>
+              <li>The initial page &amp; wasm download comes from GitHub Pages' CDN, which sees your IP requesting the site (like visiting any website) — but never your photos.</li>
+              <li>Whatever you do with the converted file afterwards (emailing it, uploading it elsewhere) is up to you.</li>
+              <li>Other software on your device isn't something a web page can vouch for.</li>
+            </ul>
+          </div>
+          <div class="security-card">
+            <h3>Trust surface</h3>
+            <ul>
+              <li>The static site bundle served by GitHub Pages, pinned per deploy.</li>
+              <li>The TLS connection between you and GitHub Pages.</li>
+              <li>The libheif WebAssembly shipped inside the bundle — no third-party runtime CDN.</li>
+            </ul>
+          </div>
+        </div>
+        <p class="modal-foot">Want to be certain? Turn off your Wi-Fi after the page loads — unHEIC
+          keeps converting. Nothing is going anywhere.</p>
+      </div>
+    </template>
+
+    <template id="tmpl-about">
+      <div class="modal-content">
+        <h2 class="modal-title">About unHEIC</h2>
+        <p>iPhones save photos as <strong>HEIC</strong> to fit more pictures in less space — but
+          plenty of websites, apps and PCs still can't open them. unHEIC converts HEIC &amp; HEIF
+          into universally-accepted JPG, PNG or WebP without uploading a single byte.</p>
+        <p>It runs the open-source libheif decoder as WebAssembly, entirely inside your browser.
+          No accounts, no watermarks, no batch limits, no server. Once loaded it even works
+          offline.</p>
+        <p class="about-links">
+          <a href="https://benrichardson.dev/" target="_blank" rel="noopener noreferrer">benrichardson.dev</a>
+          <span aria-hidden="true">·</span>
+          <a href="https://github.com/ben-gy/unheic" target="_blank" rel="noopener noreferrer">Source on GitHub</a>
+        </p>
+      </div>
+    </template>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
