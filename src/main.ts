@@ -7,11 +7,6 @@
  * Owns no heavy logic — decoding/encoding lives in the worker.
  */
 
-// feedback:begin (managed by hub/scripts/feedback/backfill.mjs)
-import { mountFeedback } from './feedback';
-mountFeedback();
-// feedback:end
-
 import { Converter, type ConvertSettings } from './convert';
 import {
   DEFAULT_FORMAT,
