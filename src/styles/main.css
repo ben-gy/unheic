@@ -348,6 +348,31 @@ a:hover {
   color: var(--text-tertiary);
   margin-top: 14px;
 }
+.sample-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 16px;
+  padding: 7px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-surface);
+  color: var(--accent);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+}
+.sample-link:hover,
+.sample-link:focus-visible {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  outline: none;
+}
+.sample-link svg {
+  color: var(--accent);
+}
 
 /* ────────────────────────────── Overall bar ────────────────────────────── */
 

@@ -9,21 +9,33 @@ export default defineConfig({
   plugins: [
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.svg'],
+      includeAssets: ['favicon.svg', 'favicon-32.png', 'favicon-16.png', 'apple-touch-icon.png', 'robots.txt'],
       manifest: {
         name: 'unHEIC — HEIC to JPG converter',
         short_name: 'unHEIC',
         description: 'Convert iPhone HEIC & HEIF photos to JPG, PNG or WebP in your browser.',
+        id: '/',
+        start_url: '/',
+        scope: '/',
         theme_color: '#4f46e5',
         background_color: '#faf7f2',
         display: 'standalone',
+        orientation: 'any',
+        categories: ['photo', 'utilities', 'graphics'],
         icons: [
+          { src: 'icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          { src: 'apple-touch-icon.png', sizes: '180x180', type: 'image/png', purpose: 'any' },
           { src: 'favicon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,wasm}'],
+        // Precache the app shell, icons and the demo sample. The libheif WASM is
+        // large and served/HTTP-cached on demand, so it is kept OUT of precache.
+        globPatterns: ['**/*.{js,css,html,svg,png,jpg,heic}'],
         maximumFileSizeToCacheInBytes: 8 * 1024 * 1024,
+        navigateFallback: 'index.html',
       },
     }),
   ],

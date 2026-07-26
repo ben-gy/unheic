@@ -82,6 +82,14 @@ app.innerHTML = `
       <div class="dz-title">Drop your <span class="glossary-link" data-term="heic" role="button" tabindex="0">HEIC</span> photos</div>
       <div class="dz-sub">or click to browse · paste with ⌘/Ctrl&nbsp;+&nbsp;V</div>
       <div class="dz-formats">Whole camera-roll batches welcome · everything stays on your device</div>
+      <button type="button" class="sample-link" id="sample-btn">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+             stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 3l1.9 4.8L18 9.6l-4.1 1.8L12 16l-1.9-4.6L6 9.6l4.1-1.8z"/>
+          <path d="M18.5 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8z"/>
+        </svg>
+        Try a sample HEIC
+      </button>
       <input type="file" id="file-input" class="visually-hidden"
              accept=".heic,.heif,.hif,image/heic,image/heif" multiple />
     </div>
@@ -110,6 +118,7 @@ app.innerHTML = `
 
 const dropzone = document.getElementById('dropzone') as HTMLElement;
 const fileInput = document.getElementById('file-input') as HTMLInputElement;
+const sampleBtn = document.getElementById('sample-btn') as HTMLButtonElement;
 const results = document.getElementById('results') as HTMLElement;
 const overall = document.getElementById('overall') as HTMLElement;
 const overallFill = document.getElementById('overall-fill') as HTMLElement;
@@ -313,6 +322,22 @@ function ingest(files: FileList | File[] | null | undefined): void {
   void converter.add(list);
 }
 
+// Fetch the bundled demo HEIC and feed it through the exact same ingestion path
+// a real upload uses, so the sample truly decodes and converts.
+async function loadSample(): Promise<void> {
+  try {
+    emit('info', 'Loading sample HEIC…');
+    const res = await fetch('samples/demo.heic');
+    if (!res.ok) throw new Error(`sample fetch ${res.status}`);
+    const blob = await res.blob();
+    ingest([new File([blob], 'sample.heic', { type: 'image/heic' })]);
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : 'Could not load the sample.';
+    toast(msg, 'err');
+    emit('err', `Sample failed: ${msg}`);
+  }
+}
+
 // drop zone
 dropzone.addEventListener('click', (e) => {
   if ((e.target as HTMLElement).closest('.glossary-link')) return;
@@ -327,6 +352,12 @@ dropzone.addEventListener('keydown', (e) => {
 fileInput.addEventListener('change', () => {
   ingest(fileInput.files);
   fileInput.value = '';
+});
+
+// The pill sits inside the dropzone, whose click opens the file picker — don't do both.
+sampleBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  void loadSample();
 });
 
 for (const evt of ['dragenter', 'dragover'] as const) {
